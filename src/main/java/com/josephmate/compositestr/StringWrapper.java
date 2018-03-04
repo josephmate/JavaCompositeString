@@ -1,6 +1,5 @@
 package com.josephmate.compositestr;
 
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Locale;
@@ -9,11 +8,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 /**
- * Unfortunately, {@link String} is a final class so we cannot extends. As a result, we re-implment the API, and forward all calls from Str to String.
+ * Unfortunately, {@link String} is a final class so we cannot extends. As a result, we re-implement the API, and forward all calls from Str to String.
  * @author Joseph
  */
 @Immutable
-class StringWrapper implements Serializable, Comparable<String>, CharSequence {
+class StringWrapper implements MemoryReuseString {
 	
 	private static final long serialVersionUID = -6708472144954405289L;
 	
@@ -23,15 +22,20 @@ class StringWrapper implements Serializable, Comparable<String>, CharSequence {
 		this.str = str;
 	}
 
-    /**
-     * This is the primary usecase of this library. We will tackle the other more challenging use cases later.
-     * 
-     * Use CompositeString(this, other) to re-use existing strings
-     * 
-     * @see String#concat(String)
-     */
-    public String concat(String otherStr) {
-        return str.concat(otherStr);
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#concat(java.lang.String)
+	 */
+    @Override
+	public CompositeString concat(MemoryReuseString otherStr) {
+        return new CompositeString(this, otherStr);
+    }
+
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#concat(java.lang.String)
+	 */
+    @Override
+	public CompositeString concat(String otherStr) {
+        return new CompositeString(this, new StringWrapper(otherStr));
     }
 
 	///////////////////////////////////////////////////////////////////////////////////////
@@ -39,117 +43,120 @@ class StringWrapper implements Serializable, Comparable<String>, CharSequence {
 	// so that we can efficiently re-use existing memory rather than allocating new arrays.
 	///////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * If we keep track of the indices in a wrapping object, we can re-use existing CompositeString.
-     * 
-     * @see String#substring(String)
-     */
-    public String substring(int beginIndex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#substring(int)
+	 */
+    @Override
+	public String substring(int beginIndex) {
+    	// TODO
         return str.substring(beginIndex);
     }
 
-    /**
-     * Keep track of the indices in a wrapping object, to re-use existing CompositeStrings.
-     * 
-     * @see String#substring(String, int)
-     */
-    public String substring(int beginIndex, int endIndex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#substring(int, int)
+	 */
+    @Override
+	public String substring(int beginIndex, int endIndex) {
+    	// TODO
         return str.substring(beginIndex, endIndex);
     }
 
-    /**
-     * Use a wrapping object that re-computes the characters replaced every time toString() is called.
-     * 
-     * @see String#replace(char, char)
-     */
-    public String replace(char oldChar, char newChar) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#replace(char, char)
+	 */
+    @Override
+	public String replace(char oldChar, char newChar) {
+    	// TODO
         return str.replace(oldChar, newChar);
     }
 
-    /**
-     * Use a wrapping object that re-computes the characters replaced every time toString() is called.
-     * 
-     * @see String#replaceFirst(String, String)
-     */
-    public String replaceFirst(String regex, String replacement) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#replaceFirst(java.lang.String, java.lang.String)
+	 */
+    @Override
+	public String replaceFirst(String regex, String replacement) {
+    	// TODO
         return str.replaceFirst(regex, replacement);
     }
 
-    /**
-     * Use a wrapping object that re-computes the characters replaced every time toString() is called.
-     * 
-     * @see String#replaceAll(String, String)
-     */
-    public String replaceAll(String regex, String replacement) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#replaceAll(java.lang.String, java.lang.String)
+	 */
+    @Override
+	public String replaceAll(String regex, String replacement) {
+    	// TODO
         return str.replaceFirst(regex, replacement);
     }
 
-    /**
-     * Use a wrapping object that re-computes the characters replaced every time toString() is called.
-     * 
-     * @see String#replace(CharSequence, CharSequence)
-     */
-    public String replace(CharSequence target, CharSequence replacement) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#replace(java.lang.CharSequence, java.lang.CharSequence)
+	 */
+    @Override
+	public String replace(CharSequence target, CharSequence replacement) {
+    	// TODO
         return str.replace(target, replacement);
     }
 
-    /**
-     * maintain pointers to the substrings
-     * @see String#split(String, int)
-     */
-    public String[] split(String regex, int limit) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#split(java.lang.String, int)
+	 */
+    @Override
+	public String[] split(String regex, int limit) {
+    	// TODO
         return str.split(regex, limit);
     }
 
-    /**
-     * @see String#split(String)
-     */
-    public String[] split(String regex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#split(java.lang.String)
+	 */
+    @Override
+	public String[] split(String regex) {
+    	// TODO
         return str.split(regex);
     }
 
-    /**
-     * Use a wrapping object that re-computes the characters replaced every time toString() is called.
-     * 
-     * @see String#toLowerCase(Locale)
-     */
-    public String toLowerCase(Locale locale) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#toLowerCase(java.util.Locale)
+	 */
+    @Override
+	public String toLowerCase(Locale locale) {
+    	// TODO
         return str.toLowerCase(locale);
     }
 
-    /**
-     * Use a wrapping object that re-computes the characters replaced every time toString() is called.
-     * 
-     * @see String#toLowerCase()
-     */
-    public String toLowerCase() {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#toLowerCase()
+	 */
+    @Override
+	public String toLowerCase() {
+    	// TODO
         return str.toLowerCase();
     }
 
-    /**
-     * Use a wrapping object that re-computes the characters replaced every time toString() is called.
-     * 
-     * @see String#toUpperCase(Locale)
-     */
-    public String toUpperCase(Locale locale) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#toUpperCase(java.util.Locale)
+	 */
+    @Override
+	public String toUpperCase(Locale locale) {
+    	// TODO
         return str.toUpperCase(locale);
     }
 
-    /**
-     * Use a wrapping object that re-computes the characters replaced every time toString() is called.
-     * 
-     * @see String#toUpperCase()
-     */
-    public String toUpperCase() {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#toUpperCase()
+	 */
+    @Override
+	public String toUpperCase() {
+    	// TODO
         return str.toUpperCase();
     }
 
-    /**
-     * Use a wrapping the uses start-end pointers to trim.
-     * 
-     * @see String#trim()
-     */
-    public String trim() {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#trim()
+	 */
+    @Override
+	public String trim() {
+    	// TODO
         return str.trim();
     }
 
@@ -158,263 +165,300 @@ class StringWrapper implements Serializable, Comparable<String>, CharSequence {
 	///////////////////////////////////////////////////////////////////////////////////////
     
     
-    /**
-     * @see String#length()
-     */
-    public int length() {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#length()
+	 */
+    @Override
+	public int length() {
         return str.length();
     }
 
-    /**
-     * @see String#isEmpty()
-     */
-    public boolean isEmpty() {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#isEmpty()
+	 */
+    @Override
+	public boolean isEmpty() {
         return str.isEmpty();
     }
 
-    /**
-     * @see String#charAt(int)
-     */
-    public char charAt(int index) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#charAt(int)
+	 */
+    @Override
+	public char charAt(int index) {
     	return str.charAt(index);
     }
 
-    /**
-     * @see String#codePointAt(int)
-     */
-    public int codePointAt(int index) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#codePointAt(int)
+	 */
+    @Override
+	public int codePointAt(int index) {
     	return str.codePointAt(index);
     }
 
-    /**
-     * @see String#codePointBefore(int)
-     */
-    public int codePointBefore(int index) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#codePointBefore(int)
+	 */
+    @Override
+	public int codePointBefore(int index) {
     	return str.codePointBefore(index);
     }
 
-    /**
-     * @see String#codePointCount(int, int)
-     */
-    public int codePointCount(int beginIndex, int endIndex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#codePointCount(int, int)
+	 */
+    @Override
+	public int codePointCount(int beginIndex, int endIndex) {
     	return str.codePointCount(beginIndex, endIndex);
     }
 
-    /**
-     * @see String#codePointCount(int, int)
-     */
-    public int offsetByCodePoints(int index, int codePointOffset) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#offsetByCodePoints(int, int)
+	 */
+    @Override
+	public int offsetByCodePoints(int index, int codePointOffset) {
     	return str.codePointCount(index, codePointOffset);
     }
 
-    /**
-     * @see String#getChars(int, int, char[], int)
-     */
-    public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#getChars(int, int, char[], int)
+	 */
+    @Override
+	public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin) {
     	str.getChars(srcBegin, srcEnd, dst, dstBegin);
     }
 
-    /**
-     * @see String#getBytes(int, int, byte[], int)
-     */
-    @Deprecated
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#getBytes(int, int, byte[], int)
+	 */
+    @Override
+	@Deprecated
     public void getBytes(int srcBegin, int srcEnd, byte dst[], int dstBegin) {
     	str.getBytes(srcBegin, srcEnd, dst, dstBegin);
     }
 
-    /**
-     * @see String#getBytes(String)
-     */
-    public byte[] getBytes(String charsetName) throws UnsupportedEncodingException {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#getBytes(java.lang.String)
+	 */
+    @Override
+	public byte[] getBytes(String charsetName) throws UnsupportedEncodingException {
         return str.getBytes(charsetName);
     }
 
-    /**
-     * @see String#getBytes(charset)
-     */
-    public byte[] getBytes(Charset charset) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#getBytes(java.nio.charset.Charset)
+	 */
+    @Override
+	public byte[] getBytes(Charset charset) {
         return str.getBytes(charset);
     }
 
-    /**
-     * @see String#getBytes()
-     */
-    public byte[] getBytes() {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#getBytes()
+	 */
+    @Override
+	public byte[] getBytes() {
         return str.getBytes();
     }
 
-    /**
-     * @see String#equals(Object)
-     */
-    public boolean equals(Object anObject) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#equals(java.lang.Object)
+	 */
+    @Override
+	public boolean equals(Object anObject) {
         return str.equals(anObject);
     }
 
-    /**
-     * @see String#contentEquals(StringBuffer)
-     */
-    public boolean contentEquals(StringBuffer sb) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#contentEquals(java.lang.StringBuffer)
+	 */
+    @Override
+	public boolean contentEquals(StringBuffer sb) {
         return str.contentEquals(sb);
     }
 
-    /**
-     * @see String#contentEquals(CharSequence)
-     */
-    public boolean contentEquals(CharSequence cs) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#contentEquals(java.lang.CharSequence)
+	 */
+    @Override
+	public boolean contentEquals(CharSequence cs) {
         return str.contentEquals(cs);
     }
 
-    /**
-     * @see String#equalsIgnoreCase(String)
-     */
-    public boolean equalsIgnoreCase(String anotherString) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#equalsIgnoreCase(java.lang.String)
+	 */
+    @Override
+	public boolean equalsIgnoreCase(String anotherString) {
         return str.equalsIgnoreCase(anotherString);
     }
 
-    /**
-     * @see String#compareTo(String)
-     */
-    public int compareTo(String anotherString) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#compareTo(java.lang.String)
+	 */
+    @Override
+	public int compareTo(String anotherString) {
         return str.compareTo(anotherString);
     }
 
-    /**
-     * @see String#compareToIgnoreCase(String)
-     */
-    public int compareToIgnoreCase(String otherStr) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#compareToIgnoreCase(java.lang.String)
+	 */
+    @Override
+	public int compareToIgnoreCase(String otherStr) {
         return str.compareToIgnoreCase(otherStr);
     }
 
-    /**
-     * @see String#regionMatches(int, String, int, int)
-     */
-    public boolean regionMatches(int toffset, String other, int ooffset, int len) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#regionMatches(int, java.lang.String, int, int)
+	 */
+    @Override
+	public boolean regionMatches(int toffset, String other, int ooffset, int len) {
         return str.regionMatches(toffset, other, ooffset, len);
     }
 
-    /**
-     * @see String#regionMatches(boolean, int, String, int, int)
-     */
-    public boolean regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#regionMatches(boolean, int, java.lang.String, int, int)
+	 */
+    @Override
+	public boolean regionMatches(boolean ignoreCase, int toffset, String other, int ooffset, int len) {
         return str.regionMatches(ignoreCase, toffset, other, ooffset, len);
     }
 
-    /**
-     * @see String#startsWith(String, int)
-     */
-    public boolean startsWith(String prefix, int toffset) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#startsWith(java.lang.String, int)
+	 */
+    @Override
+	public boolean startsWith(String prefix, int toffset) {
     	return str.startsWith(prefix, toffset);
     }
 
-    /**
-     * @see String#startsWith(String)
-     */
-    public boolean startsWith(String prefix) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#startsWith(java.lang.String)
+	 */
+    @Override
+	public boolean startsWith(String prefix) {
         return str.startsWith(prefix);
     }
 
-    /**
-     * @see String#endsWith(String)
-     */
-    public boolean endsWith(String suffix) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#endsWith(java.lang.String)
+	 */
+    @Override
+	public boolean endsWith(String suffix) {
         return str.endsWith(suffix);
     }
 
-    /**
-     * @see String#hashCode()
-     */
-    public int hashCode() {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#hashCode()
+	 */
+    @Override
+	public int hashCode() {
         return str.hashCode();
     }
 
-    /**
-     * @see String#indexOf(int)
-     */
-    public int indexOf(int ch) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#indexOf(int)
+	 */
+    @Override
+	public int indexOf(int ch) {
         return str.indexOf(ch);
     }
 
-    /**
-     * @see String#indexOf(int, int)
-     */
-    public int indexOf(int ch, int fromIndex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#indexOf(int, int)
+	 */
+    @Override
+	public int indexOf(int ch, int fromIndex) {
         return str.indexOf(ch, fromIndex);
     }
 
-    /**
-     * @see String#lastIndexOf(int)
-     */
-    public int lastIndexOf(int ch) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#lastIndexOf(int)
+	 */
+    @Override
+	public int lastIndexOf(int ch) {
         return str.lastIndexOf(ch);
     }
 
-    /**
-     * @see String#lastIndexOf(int, int)
-     */
-    public int lastIndexOf(int ch, int fromIndex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#lastIndexOf(int, int)
+	 */
+    @Override
+	public int lastIndexOf(int ch, int fromIndex) {
     	return str.lastIndexOf(ch, fromIndex);
     }
 
-    /**
-     * @see String#indexOf(String)
-     */
-    public int indexOf(String otherStr) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#indexOf(java.lang.String)
+	 */
+    @Override
+	public int indexOf(String otherStr) {
         return str.indexOf(otherStr);
     }
 
-    /**
-     * @see String#indexOf(String, int)
-     */
-    public int indexOf(String otherStr, int fromIndex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#indexOf(java.lang.String, int)
+	 */
+    @Override
+	public int indexOf(String otherStr, int fromIndex) {
         return str.indexOf(otherStr, fromIndex);
     }
 
-    /**
-     * @see String#lastIndexOf(String)
-     */
-    public int lastIndexOf(String otherStr) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#lastIndexOf(java.lang.String)
+	 */
+    @Override
+	public int lastIndexOf(String otherStr) {
         return str.lastIndexOf(otherStr);
     }
 
-    /**
-     * @see String#lastIndexOf(String, int)
-     */
-    public int lastIndexOf(String otherStr, int fromIndex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#lastIndexOf(java.lang.String, int)
+	 */
+    @Override
+	public int lastIndexOf(String otherStr, int fromIndex) {
         return str.lastIndexOf(otherStr);
     }
 
-    /**
-     * @see String#subSequence(int, int)
-     */
-    public CharSequence subSequence(int beginIndex, int endIndex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#subSequence(int, int)
+	 */
+    @Override
+	public CharSequence subSequence(int beginIndex, int endIndex) {
         return str.subSequence(beginIndex, endIndex);
     }
 
-    /**
-     * @see String#matches(String)
-     */
-    public boolean matches(String regex) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#matches(java.lang.String)
+	 */
+    @Override
+	public boolean matches(String regex) {
         return str.matches(regex);
     }
 
-    /**
-     * @see String#contains(CharSequence)
-     */
-    public boolean contains(CharSequence s) {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#contains(java.lang.CharSequence)
+	 */
+    @Override
+	public boolean contains(CharSequence s) {
         return str.contains(s);
     }
 
-    /**
-     * @see String#toString()
-     */
-    public String toString() {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#toString()
+	 */
+    @Override
+	public String toString() {
         return str.toString();
     }
 
-    /**
-     * @see String#toCharArray()
-     */
-    public char[] toCharArray() {
+    /* (non-Javadoc)
+	 * @see com.josephmate.compositestr.MemoryReuseString#toCharArray()
+	 */
+    @Override
+	public char[] toCharArray() {
         return str.toCharArray();
     }
 	
