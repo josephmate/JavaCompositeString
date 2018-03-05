@@ -48,153 +48,92 @@ public class CompositeString implements MemoryReuseString {
 	}
 
 	@Override
-	public String substring(int beginIndex) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String substring(int beginIndex, int endIndex) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String replace(char oldChar, char newChar) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String replaceFirst(String regex, String replacement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String replaceAll(String regex, String replacement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String replace(CharSequence target, CharSequence replacement) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String[] split(String regex, int limit) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String[] split(String regex) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toLowerCase(Locale locale) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toLowerCase() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toUpperCase(Locale locale) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toUpperCase() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String trim() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public int length() {
-		// TODO Auto-generated method stub
-		return 0;
+		int sum = 0;
+		for(MemoryReuseString str : concatenatedStrings) {
+			sum += str.length();
+		}
+		return sum;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
+		for(MemoryReuseString str : concatenatedStrings) {
+			if(!str.isEmpty()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
 	public char charAt(int index) {
-		// TODO Auto-generated method stub
-		return 0;
+		int charsConsumed = 0;
+		for(MemoryReuseString str : concatenatedStrings) {
+			int innerLen = str.length();
+			if(index < charsConsumed + innerLen) {
+				return str.charAt(index - charsConsumed);
+			}
+			charsConsumed += innerLen;
+		}
+		throw new IndexOutOfBoundsException("Composite string only contained " + charsConsumed + " characters");
 	}
-
-	@Override
-	public int codePointAt(int index) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int codePointBefore(int index) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int codePointCount(int beginIndex, int endIndex) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	public int offsetByCodePoints(int index, int codePointOffset) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
+	
+	/**
+	 * @see String#getChars(int, int, char[], int)
+	 */
 	@Override
 	public void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin) {
-		// TODO Auto-generated method stub
+		// srcBegin is negative
+		if(srcBegin < 0) {
+			throw new IndexOutOfBoundsException(srcBegin + " srcBegin must be >= 0");
+		}
+		// srcBegin is greater than srcEnd
+		if(srcBegin > srcEnd) {
+			throw new IndexOutOfBoundsException(srcBegin + " srcBegin <= srcEnd " + srcEnd);
+		}
+		// srcEnd is greater than the length of this string
+		int len = this.length();
+		if(srcEnd > len) {
+			throw new IndexOutOfBoundsException(srcEnd + " srcEnd must be < lenght() = " + len);
+		}
+		// dstBegin is negative 
+		if(dstBegin < 0) {
+			throw new IndexOutOfBoundsException(dstBegin + " dstBegin must be >= 0");
+		}
+		// dstBegin+(srcEnd-srcBegin) is larger than dst.length
+		if(dstBegin+(srcEnd-srcBegin) > dst.length) {
+			throw new IndexOutOfBoundsException("dst " + dst.length
+					+ " has insufficient capacity to start at " + dstBegin
+					+ " and copy srcBegin " + srcBegin + " to srcEnd " + srcEnd);
+		}
 		
-	}
-
-	@Override
-	public void getBytes(int srcBegin, int srcEnd, byte[] dst, int dstBegin) {
-		// TODO Auto-generated method stub
+		// find the first string to start copying from
+		int charsDropped = 0;
+		int charsCopied = 0;
+		int strIdx = 0;
+		for(strIdx = 0; strIdx < concatenatedStrings.length; strIdx++) {
+			MemoryReuseString str = concatenatedStrings[strIdx];
+			int innerLen =  str.length();
+			if(srcBegin < charsDropped + innerLen) {
+				int endMax = Math.min(innerLen, srcEnd - charsDropped);
+				str.getChars(srcBegin - charsDropped, endMax, dst, dstBegin);
+				strIdx++;
+				charsDropped += innerLen;
+				charsCopied += endMax - (srcBegin - charsDropped);
+				break;
+			}
+			charsDropped += innerLen;
+		}
 		
-	}
-
-	@Override
-	public byte[] getBytes(String charsetName) throws UnsupportedEncodingException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public byte[] getBytes(Charset charset) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public byte[] getBytes() {
-		// TODO Auto-generated method stub
-		return null;
+		// continue until we copied enough characters
+		for(/*no init needed*/; strIdx < concatenatedStrings.length && charsDropped <= (srcEnd-srcBegin); strIdx++) {
+			MemoryReuseString str = concatenatedStrings[strIdx];
+			int innerLen =  str.length();
+			int endMax = Math.min(innerLen, srcEnd - charsDropped);
+			str.getChars(0, endMax, dst, dstBegin + charsCopied);
+			charsCopied += endMax;
+		}
 	}
 
 	@Override
@@ -325,6 +264,136 @@ public class CompositeString implements MemoryReuseString {
 
 	@Override
 	public char[] toCharArray() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+	// For the Codepoint methods, we cheat by making a temporary java.lang.String and String will take
+	// care of it. I don't want to deal with all the intricacies of UTF. This still satisfies the
+	// requirements of the library to not to return newly allocated Strings because the temporary string
+	// does not escape the scope of this method.
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	@Deprecated
+	public void getBytes(int srcBegin, int srcEnd, byte[] dst, int dstBegin) {
+		this.toString().getBytes(srcBegin, srcEnd, dst, dstBegin);
+	}
+
+	@Override
+	public byte[] getBytes(String charsetName) throws UnsupportedEncodingException {
+		return this.toString().getBytes(charsetName);
+	}
+
+	@Override
+	public byte[] getBytes(Charset charset) {
+		return this.toString().getBytes(charset);
+	}
+
+	@Override
+	public byte[] getBytes() {
+		return this.toString().getBytes();
+	}
+
+	@Override
+	public int codePointAt(int index) {
+		return this.toString().codePointAt(index);
+	}
+
+	@Override
+	public int codePointBefore(int index) {
+		return this.toString().codePointBefore(index);
+	}
+
+	@Override
+	public int codePointCount(int beginIndex, int endIndex) {
+		return this.toString().codePointCount(beginIndex, endIndex);
+	}
+
+	@Override
+	public int offsetByCodePoints(int index, int codePointOffset) {
+		return this.toString().offsetByCodePoints(index, codePointOffset);
+	}
+	
+	//////////////////////////////////////////////
+	// Save the difficult methods for the end
+	//////////////////////////////////////////////
+
+	@Override
+	public String substring(int beginIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String substring(int beginIndex, int endIndex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String replace(char oldChar, char newChar) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String replaceFirst(String regex, String replacement) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String replaceAll(String regex, String replacement) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String replace(CharSequence target, CharSequence replacement) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String[] split(String regex, int limit) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String[] split(String regex) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String toLowerCase(Locale locale) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String toLowerCase() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String toUpperCase(Locale locale) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String toUpperCase() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String trim() {
 		// TODO Auto-generated method stub
 		return null;
 	}
